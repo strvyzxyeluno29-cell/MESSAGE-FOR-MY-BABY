@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vintage Valentine Envelope</title>
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #f5efe6;
+    font-family: 'Serif';
+    font-weight: bold;
+    perspective: 1500px;
+}
+
+@keyframes reveal {
+    0% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.seq span {
+    display: inline-block;
+    opacity: 0;
+    animation: reveal 0.5s ease-out forwards;
+    animation-delay: calc(var(--i) * 0.05s);
+}
+
+.valentine-label {
+    padding: 12px 28px;
+    background: #e6d3b1;
+    border: 2px solid #d18f9e; 
+    border-radius: 12px;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: #6b4f3f;
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.35), inset -2px -2px 4px rgba(255,255,255,0.3);
+    text-align: center;
+    min-height: 36px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.envelope-wrapper {
+    position: relative;
+    width: 400px;
+    height: 280px;
+    margin-bottom: 20px;
+    perspective: 1200px;
+}
+
+.envelope {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #e6d3b1;
+    border-radius: 4px;
+    border: 2px solid #c5a17d; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.35), inset 0 6px 10px rgba(255,255,255,0.3);
+    z-index: 2;
+}
+
+.flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ead8bc;
+    border: 2px solid #c1a97c; /* flap border */
+    clip-path: polygon(0 0, 100% 0, 50% 55%);
+    transform-origin: top center;
+    transition: transform 0.8s ease-in-out;
+    z-index: 5;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 3px 6px rgba(255,255,255,0.2);
+}
+
+/* Heart at flap tip */
+.flap::after {
+    content: "❤";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    color: #e889b0;
+    font-size: 24px;
+    transition: transform 0.8s ease;
+}
+
+.flap.open::after {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.flap.open { transform: rotateX(-180deg); z-index: 1; }
+
+.pocket {
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 200px solid #e0caa4;
+    border-right: 200px solid #e0caa4;
+    border-top: 140px solid transparent;
+    border-bottom: 140px solid #e6d3b1;
+    z-index: 4;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25) inset;
+}
+
+.paper {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 380px;
+    height: 500px;
+    background: #DDB892;
+    z-index: 3;
+    transition: transform 0.8s ease-in-out, opacity 0.8s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    box-shadow: 4px 12px 30px rgba(0,0,0,0.35);
+    border-radius: 6px;
+    color: #6b4f3f;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(0);
+}
+
+.paper.show {
+    transform: translateY(-160px) rotate(360deg);
+    opacity: 1;
+}
+
+.ribbon-vertical,
+.ribbon-horizontal {
+    position: absolute;
+    background: #f2a2c1;
+    z-index: 6;
+    transition: transform 0.8s ease, opacity 0.8s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.ribbon-vertical { left: 50%; transform: translateX(-50%); width: 28px; height: 100%; }
+.ribbon-horizontal { top: 50%; transform: translateY(-50%); width: 100%; height: 28px; }
+
+.bow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 7;
+    transition: all 0.8s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.bow::before,
+.bow::after {
+    content: "";
+    position: absolute;
+    width: 40px;
+    height: 30px;
+    background: #f2a2c1;
+    border-radius: 50% 50% 0 50%;
+    transition: all 0.8s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.bow::before { left: -35px; transform: rotate(-20deg); }
+.bow::after { right: -35px; transform: scaleX(-1) rotate(-20deg); }
+
+.knot {
+    width: 16px;
+    height: 16px;
+    background: #e889b0;
+    border-radius: 50%;
+    position: absolute;
+    top: 7px;
+    left: -8px;
+    transition: all 0.8s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.bow.untie::before { transform: rotate(-80deg) translate(-30px, -20px); opacity:0; }
+.bow.untie::after { transform: scaleX(-1) rotate(-80deg) translate(30px, -20px); opacity:0; }
+.knot.untie { opacity:0; }
+
+.button-container {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.open-btn, .close-btn {
+    padding: 12px 30px;
+    background: #e6d3b1;
+    border: 2px solid #d18f9e; 
+    border-radius: 4px;
+    color: #6b4f3f;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 2px 4px 12px rgba(0,0,0,0.25), inset -2px -2px 4px rgba(255,255,255,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.open-btn span, .close-btn span {
+    display: inline-block;
+    opacity: 0;
+    animation: reveal 0.5s ease-out forwards;
+    animation-delay: calc(var(--i) * 0.05s);
+}
+.ribbon-drop { transform: translateY(150px); opacity:0; }
+</style>
+</head>
+<body>
+
+<div class="valentine-label seq" id="label"></div>
+
+<div class="envelope-wrapper">
+    <div class="flap"></div>
+    <div class="paper" id="paper"><h2 style="margin:0;">💖 Happy Valentine's day! 💖HEHEHEHEHEHEHEHE
+    HEHHEEHHEHEHEHEHEHEHHEH
+    HHEHEHEHEHEHEHEHEHEHE
+    HEHHEHEHEHEHEHEHEHEHEH
+    HEHHEHEHEHEHEHHEHEHEEE
+    HEHEHHEHEHEHEHEHEEHEHEH
+    HEHEHHEHEHEHEH
+    
+    HEHEHEHEHHEHEH
+    GEGEHEHHEHEHEH</h2></div>
+    <div class="envelope"></div>
+    <div class="pocket"></div>
+    <div class="ribbon-vertical"></div>
+    <div class="ribbon-horizontal"></div>
+    <div class="bow"><div class="knot"></div></div>
+</div>
+
+<div class="button-container">
+    <button class="open-btn" id="openBtn"></button>
+    <button class="close-btn" id="closeBtn"></button>
+</div>
+
+<script>
+/* --- Header Animation --- */
+const texts = ["HAPPY VALENTINE'S DAY!","WILL YOU BE MY VALENTINE?"];
+const label = document.getElementById("label");
+let index = 0;
+
+function animateHeader(text){
+    label.innerHTML="";
+    [...text].forEach((char,i)=>{
+        const span = document.createElement("span");
+        span.textContent = char===" "?"\u00A0":char;
+        span.style.setProperty("--i", i+1);
+        label.appendChild(span);
+    });
+}
+function loopHeader(){
+    animateHeader(texts[index]);
+    const totalTime = texts[index].length*50 + 2000;
+    index = (index+1) % texts.length;
+    setTimeout(loopHeader,totalTime);
+}
+loopHeader();
+
+/* --- Animate Button Text on Press --- */
+function animateButton(btn, text){
+    btn.innerHTML = "";
+    [...text].forEach((char,i)=>{
+        const span = document.createElement("span");
+        span.textContent = char===" "?"\u00A0":char;
+        span.style.setProperty("--i", i+1);
+        btn.appendChild(span);
+    });
+}
+
+const openBtn = document.getElementById("openBtn");
+const closeBtn = document.getElementById("closeBtn");
+animateButton(openBtn,"OPEN ENVELOPE");
+animateButton(closeBtn,"CLOSE ENVELOPE");
+
+function buttonPressAnimation(btn, text){
+    btn.addEventListener("click", ()=>{
+        animateButton(btn,text);
+    });
+}
+
+buttonPressAnimation(openBtn,"OPEN ENVELOPE");
+buttonPressAnimation(closeBtn,"CLOSE ENVELOPE");
+
+/* --- Envelope Open/Close --- */
+const flap = document.querySelector(".flap");
+const paper = document.getElementById("paper");
+const bow = document.querySelector(".bow");
+const knot = document.querySelector(".knot");
+const ribbonV = document.querySelector(".ribbon-vertical");
+const ribbonH = document.querySelector(".ribbon-horizontal");
+let opened = false;
+
+openBtn.addEventListener("click", async ()=>{
+    if(opened) return;
+    opened=true;
+    bow.classList.add("untie");
+    knot.classList.add("untie");
+    await new Promise(r=>setTimeout(r,800));
+    ribbonV.classList.add("ribbon-drop");
+    ribbonH.classList.add("ribbon-drop");
+    await new Promise(r=>setTimeout(r,800));
+    ribbonV.style.display="none";
+    ribbonH.style.display="none";
+    flap.classList.add("open");
+    await new Promise(r=>setTimeout(r,600));
+    paper.classList.add("show");
+});
+
+closeBtn.addEventListener("click", async ()=>{
+    if(!opened) return;
+    opened=false;
+    paper.classList.remove("show");
+    await new Promise(r=>setTimeout(r,800));
+    flap.classList.remove("open");
+    await new Promise(r=>setTimeout(r,600));
+    ribbonV.style.display="block";
+    ribbonH.style.display="block";
+    ribbonV.classList.add("ribbon-drop");
+    ribbonH.classList.add("ribbon-drop");
+    await new Promise(r=>setTimeout(r,50));
+    ribbonV.classList.remove("ribbon-drop");
+    ribbonH.classList.remove("ribbon-drop");
+    bow.classList.remove("untie");
+    knot.classList.remove("untie");
+});
+</script>
+
+</body>
+</html>
